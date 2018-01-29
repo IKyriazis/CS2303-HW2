@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "twoD.h"
-#define LEN(arr) ((int) (sizeof (arr) / sizeof (arr)[0]))
 
 
 /** Computes the length of the longest line in a file
@@ -12,21 +11,46 @@
  * @return The number of characters in the biggest line
  */
 int calcLongestLine(FILE* file) {
-	rewind(file);
-	char c;
-	int maxline = 0;
-	int curline = 0;
+	rewind(file); // start the file from the beginning to avoid errors
+	char c; // allocate a variable to store the current character from the file
+	int maxline = 0; // start the biggest line counter from 0 since
+					 // we haven't read any lines yet
+
+	int curline = 0; // startthe current line counter from 0 since
+					 // we haven't read any lines yet
+
+	// Pre-condition:
+	// c has no proper value since the file has not been read
 	while((c = fgetc(file)) != EOF) {
+		// Invariant 1:
+		// C will always be the next character in the file until
+		// the EOF is signalled
 		if (c == '\n') {
+			// If there is a next line character that means that
+			// there is a new line. When there is a new line,
+			// check to see if the current line is greater than the
+			// current longest line
 			if (curline > maxline) {
+				// if it is then replace the current maximum line with
+				// the line we just read
 				maxline = curline;
 			}
+			// reset the current line to length of 0 since we are just
+			// starting a new line
 			curline = 0;
 		}
+		// if the current character is not a new line character, then
+		// it must be on the same line as the other characters
 		if (c != '\n') {
+			// increment the length of the current line because
+			// we haven't moved onto the next line
 			curline++;
 		}
 	}
+	// Post-condition:
+	// the entire file has been read because c == EOF
+
+	// return the longest line that this function has read
 	return maxline;
 }
 
@@ -35,14 +59,30 @@ int calcLongestLine(FILE* file) {
  * @return The number of lines in the file
  */
 int calcNumberLines(FILE* file) {
-	rewind(file);
-	int nl = 0;
-	char c;
+	rewind(file); // start the file from the beginning to avoid errors
+	int nl = 0; // initialize the new line counter with 0 because we
+				// haven't gone through the file yet
+
+	char c; // create a character value to store the current character
+	        // value in
+	// Pre-condition:
+	// c has no proper value because the loop hasn't started yet
 	while((c = getc(file)) != EOF) {
+		// Invariant 2:
+		// C will always be the next character in the file until
+		// the EOF is signaled
+
+		// if the current character is a new line then...
 		if (c == '\n') {
+			// ...increment the number of lines variable to correctly count
+			// the number of lines
 			nl++;
 		}
 	}
+	// Post-condition:
+	// c has a value equivalent to EOF since the file signaled end of file
+
+	// return nl back to the user since that is how many lines this function read
 	return nl;
 }
 
@@ -95,7 +135,8 @@ char** fileToArray(FILE* file) {
  * @param cols The amount of columns
  * @return An array with rows rows and cols columns, with start in the center
  */
-char** centerPattern(int startRows, int startCols, char **start, int rows, int cols) {
+char** centerPattern(unsigned int startRows, unsigned int startCols,
+						char **start, unsigned int rows, unsigned int cols) {
 	int i, j;
 	char **centered = make2Dchar(rows, cols);
 	for (i = 0; i < rows; i++) {
@@ -111,6 +152,16 @@ char** centerPattern(int startRows, int startCols, char **start, int rows, int c
 	return centered;
 }
 
+/**
+ * Plays a single generation of the Game of Life
+ * @param x The amount of rows in the grid
+ * @param y The amount of columns in the grid
+ * @param Old The generation to read from
+ * @param New The generation to write to
+ */
+void playOne(unsigned int x, unsigned int y, char **old, char **new) {
+
+}
 
 
 
@@ -207,6 +258,7 @@ int main(int argc, char **argv) {
 	startRows = calcNumberLines(input);
 	startCols = calcLongestLine(input);
 	gridA = centerPattern(startRows, startCols, start, rows, cols);
+
 
 
 	/*Once opened, you can read from the file one character at a time with fgetc().

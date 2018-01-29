@@ -402,16 +402,35 @@ unsigned int isDifferent(unsigned int rows, unsigned int cols,
 
 	unsigned int i, j; // counter variables for rows and cols
 
-	unsigned int different = 0;
+	unsigned int different = 0; // holds whether or not the arrays are diffferent
 
+	//Pre-condition:
+	// no rows have been searched
 	for (i = 0; i < rows; i++) {
+		// Invariant 13:
+		// i+1 is equal to the amount of rows checked for difference
+
+		// Pre-condition:
+		// No columns in ith row have been searched
 		for (j = 0; j < cols; j++) {
+			// Invariant 14:
+			// j+1 is equal to amount of columns in ith row searched
+
+			//if the element in the first array is not equal to
+			// the element with the same position in the second array
+			// show that the arrays are different
 			if (arr1[i][j] != arr2[i][j]) {
 				different = 1;
 				break;
 			}
 		}
+		// Post-condition:
+		// All columns in ith row have been searched
 	}
+	//Post-condition:
+	// all rows in 2d arrays have been searched
+
+	// tell user arrays are different
 	return different;
 
 }
@@ -452,6 +471,8 @@ int main(int argc, char **argv) {
 	cols = atoi(argv[2]);
 	gens = atoi(argv[3]);
 	inputFileName = argv[4];
+
+	// Set doPrint and doPause according to command line arguments
 	if (argc == 7) {
 		if ((char) argv[5][0] == 'y') {
 			doPrint = 1;
@@ -516,15 +537,28 @@ int main(int argc, char **argv) {
 	printGrid(rows, cols, gridA);
 
 	if (argc == 5) {
-		int i;
+		int i; // counter for loop
+
+		// make these pointers to easily swap out grid
 		char **p = gridA;
 		char **q = gridB;
 		char **temp = gridC;
+
+		// Pre-condition:
+		// No generations have been printed
 		for (i = 0; i < gens; i++) {
+			// Invariant 15:
+			// i+1 equals the amount of generations we
+			// have simulated
+
+			//plays a single generation
 			playOne(rows, cols, p, q);
 			temp = p;
 			p = q;
 			q = temp;
+
+			//checks to see if generations are equivalent
+			// if so then print a message and quit
 			if (!isDifferent(rows, cols, gridA, gridB)
 			 || !isDifferent(rows, cols, gridB, gridC)
 			 || !isDifferent(rows, cols, gridA, gridC)) {
@@ -533,20 +567,24 @@ int main(int argc, char **argv) {
 									"Generations achieved: %d", i);
 				return EXIT_SUCCESS;
 			}
+			// otherwise, if we hit the max generations, show it
 			else if (i == gens - 1) {
-				printf("Max generations reached: %d\n", i);
+				printf("Max generations reached: %d\n", i + 1);
 				return EXIT_SUCCESS;
 			}
 		}
 		printGrid(rows, cols, p);
 	}
+	// This code below is repetitive and follows the same structure as my comments above
 	else if (argc == 7) {
 		int i;
 		char **p = gridA;
 		char **q = gridB;
 		char **temp = gridC;
+		// if the user specified 'y' to both optional arguments
 		if (doPrint && doPause) {
-			for (i = 0; i < gens; i++) {
+			for (i = 0; i <= gens; i++) {
+				getchar();
 				playOne(rows, cols, p, q);
 				temp = p;
 				p = q;
@@ -559,16 +597,15 @@ int main(int argc, char **argv) {
 								"Generations achieved: %d", i);
 					return EXIT_SUCCESS;
 				}
-				else if (i == gens - 1) {
+				else if (i == gens) {
 					printf("Max generations reached: %d\n", i);
 					return EXIT_SUCCESS;
 				}
 				printGrid(rows, cols, p);
-				getchar();
 			}
 		}
 		else if (doPrint && !doPause) {
-			for (i = 0; i < gens; i++) {
+			for (i = 0; i <= gens; i++) {
 				playOne(rows, cols, p, q);
 				temp = p;
 				p = q;
@@ -581,7 +618,7 @@ int main(int argc, char **argv) {
 											"Generations achieved: %d", i);
 					return EXIT_SUCCESS;
 				}
-				else if (i == gens - 1) {
+				else if (i == gens) {
 					printf("Max generations reached: %d\n", i);
 					return EXIT_SUCCESS;
 				}
@@ -589,7 +626,8 @@ int main(int argc, char **argv) {
 			}
 		}
 		else if (!doPrint && doPause) {
-			for (i = 0; i < gens; i++) {
+			for (i = 0; i <= gens; i++) {
+				getchar();
 				playOne(rows, cols, p, q);
 				temp = p;
 				p = q;
@@ -602,11 +640,10 @@ int main(int argc, char **argv) {
 							"Generations achieved: %d", i);
 					return EXIT_SUCCESS;
 				}
-				else if (i == gens - 1) {
+				else if (i == gens) {
 					printf("Max generations reached: %d\n", i);
 					return EXIT_SUCCESS;
 				}
-				getchar();
 			}
 		}
 		else {
@@ -614,7 +651,7 @@ int main(int argc, char **argv) {
 			char **p = gridA;
 			char **q = gridB;
 			char **temp = gridC;
-			for (i = 0; i < gens; i++) {
+			for (i = 0; i <= gens; i++) {
 				playOne(rows, cols, p, q);
 				temp = p;
 				p = q;
@@ -627,7 +664,7 @@ int main(int argc, char **argv) {
 												"Generations achieved: %d", i);
 					return EXIT_SUCCESS;
 				}
-				else if (i == gens - 1) {
+				else if (i == gens) {
 					printf("Max generations reached: %d\n", i);
 					return EXIT_SUCCESS;
 				}

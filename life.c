@@ -239,14 +239,66 @@ char** centerPattern(unsigned int startRows, unsigned int startCols,
 }
 
 /**
+ * Calculates the number of occupied cells in neighboring cells
+ * @param x The x coordinate of the cell we want to check
+ * @param y the y coordinate of the cell we want to check
+ * @param rows the amount of rows in the grid
+ * @param cols the amount of columns in the grid
+ * @param arr the 2d array that the cell is in
+ *
+ * https://stackoverflow.com/questions/652106/finding-neighbours-in-a-two-dimensional-array
+ */
+unsigned int getNeighbors(unsigned int x, unsigned int y,
+						  char **arr, unsigned int rows, unsigned int cols) {
+	unsigned int neighbors;
+	char **buff = make2Dchar(rows + 2, cols + 2);
+	buff = centerPattern(rows, cols, arr, rows + 2, cols + 2);
+	if (!buff) {
+		printf("failed to allocate array buff");
+	}
+
+	neighbors = buff[(x+1)-1][(y+1)-1] +
+				buff[(x+1)-1][(y+1)] +
+				buff[(x+1)-1][(y+1)+1] +
+
+				buff[(x+1)][(y+1)-1] +
+				buff[(x+1)][(y+1)+1] +
+
+				buff[(x+1)+1][(y+1)-1] +
+				buff[(x+1)+1][(y+1)] +
+				buff[(x+1)+1][(y+1)+1];
+
+	return neighbors;
+
+	free(buff);
+}
+
+/**
  * Plays a single generation of the Game of Life
- * @param x The amount of rows in the grid
- * @param y The amount of columns in the grid
+ * @param rows The amount of rows in the grid
+ * @param cols The amount of columns in the grid
  * @param Old The generation to read from
  * @param New The generation to write to
  */
-void playOne(unsigned int x, unsigned int y, char **old, char **new) {
+void playOne(unsigned int rows, unsigned int cols, char **old, char **new) {
+	unsigned int i, j, neighbors;
+	for (i = 0; i < rows; i++) {
+		for (j = 0; j < cols; j++) {
+			neighbors = getNeighbors(i, j, old, rows, cols);
+			if ((old[i][j] == 'x') &&
+				((neighbors == 0 || neighbors == 1)
+			 || ((neighbors <= 8) && (neighbors >= 4)))) {
+				new[i][j] = ' ';
+			}
+			else if ((old[i][j] == 'x') && (neighbors == 2 || neighbors == 3)) {
+				new[i][j] = 'x';
+			}
+			else if ((old[i][j] == ' ') && (neighbors == 3)) {
+				new[i][j] = 'x';
+			}
 
+		}
+	}
 }
 
 
@@ -287,8 +339,8 @@ int main(int argc, char **argv) {
 	cols = atoi(argv[2]);
 	gens = atoi(argv[3]);
 	inputFileName = argv[4];
-	/*
-	switch (argc) {
+
+	/*switch (argc) {
 		int i;
 		case 5:
 			for (i = 0; i < gens; i++) {
@@ -320,8 +372,8 @@ int main(int argc, char **argv) {
 				}
 			}
 
-	}
-	*/
+	} */
+
 
 	/* Here is how you would allocate an array to hold the grid.
 	*/
@@ -352,7 +404,9 @@ int main(int argc, char **argv) {
 		printf("\n");
 	}
 
+	for (i = 0; i < gens; i++) {
 
+	}
 
 	/*Once opened, you can read from the file one character at a time with fgetc().
 	 * You can read one line at a time using fgets().

@@ -121,10 +121,10 @@ char** fileToArray(FILE* file) {
 	// The file hasn't been read or parsed
 	for (i = 0; i < rows; i++) {
 		// Invariant 3:
-		// i is equal to the amount of lines read
+		// i+1 is equal to the amount of lines read
 		for (j = 0; j < cols; j++) {
 			// Invariant 4:
-			// j is equal to the amount of characters read on the ith line
+			// j+1 is equal to the amount of characters read on the ith line
 
 			// if the character is not the EOF signal then it must be
 			// something we can parse
@@ -151,9 +151,10 @@ char** fileToArray(FILE* file) {
 					// the row
 					while (j < cols) {
 						// Invariant 5:
-						//
+						// cols - j is always equal to the amount of columns
+						// that are filled up in this ith row
 						start[i][j] = ' ';
-						j++;
+						j++; // since we have filled in this column, go to the next one
 					}
 					// Post-condition:
 					// j is equal to the amount of columns in the row
@@ -163,6 +164,8 @@ char** fileToArray(FILE* file) {
 	}
 	// Post-condition:
 	// the file has been read and parsed up to the EOF signal
+
+	// return the parsed file as a pointer to an array
 	return start;
 }
 
@@ -178,18 +181,60 @@ char** fileToArray(FILE* file) {
  */
 char** centerPattern(unsigned int startRows, unsigned int startCols,
 						char **start, unsigned int rows, unsigned int cols) {
-	int i, j;
-	char **centered = make2Dchar(rows, cols);
+
+	int i, j; // create x and y coordinates for traversing the 2d array
+
+	char **centered = make2Dchar(rows, cols); // allocate memory for a 2d array
+											  // that will eventually be the
+											  // the 'start' array but bigger
+											  // and centered
+	// Pre-condition:
+	// every single row in the allocated array has garbage values
 	for (i = 0; i < rows; i++) {
+		// Invariant 6:
+		// i+1 is equal to the number of rows we have overwritten
+
+		// Pre-condition:
+		// every column in the allocated array has garbage values
 		for (j = 0; j < cols; j++) {
-			centered[i][j] = ' ';
+			// Invariant 7:
+			// j+1 is equal to the number of columns we have overwritten
+			// in the ith row
+			centered[i][j] = ' '; // overwrite the array with blanks
 		}
+		// Post-condition:
+		// All of the columns in the ith row have been overwritten with blanks
 	}
+	// Post-condition:
+	// All of the rows have been overwritten with blanks
+
+	// Pre-condition:
+	// the rows of the array we want to center haven't been centered yet
 	for (i = 0; i < startRows; i++) {
+		//Invariant 8:
+		// i+1 is equal to the amount of rows we've centered
+
+		// Pre-condition:
+		// the columns of the array we want centered haven't been centered yet
 		for (j = 0; j < startCols; j++) {
-			centered[((rows / 2) - (startRows / 2)) + i][((cols  / 2) -  (startCols / 2)) + j] = start[i][j];
+			// Invariant 9:
+			// j+1 is equal to the amount of columns we've centered in the ith row
+
+			// the center row starts at the amount of start rows subtracted
+			// from the amount of total rows all divided by 2
+			centered[((rows - startRows) / 2) + i]
+					// the center column starts at the amount of start columns
+					// subtracted from the amount of total columns all divided by 2
+					[((cols - startCols) / 2) + j] = start[i][j];
 		}
+		// Post-condition:
+		// all columns of the ith row have been made to scale to the smaller array
 	}
+	// Post-condition:
+	// All rows are now scaled to the smaller array. The starting pattern
+	// is now centered.
+
+	// return a pointer to the centered array
 	return centered;
 }
 

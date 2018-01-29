@@ -1,4 +1,4 @@
-/* Game of Life
+/* Game of Life - Ioannis Kyriazis
 */
 
 #include <stdio.h>
@@ -240,37 +240,63 @@ char** centerPattern(unsigned int startRows, unsigned int startCols,
 
 /**
  * Calculates the number of occupied cells in neighboring cells
- * @param x The x coordinate of the cell we want to check
  * @param y the y coordinate of the cell we want to check
+ * @param x The x coordinate of the cell we want to check
  * @param rows the amount of rows in the grid
  * @param cols the amount of columns in the grid
  * @param arr the 2d array that the cell is in
  *
- * https://stackoverflow.com/questions/652106/finding-neighbours-in-a-two-dimensional-array
+ * https://stackoverflow.com/questions/652106/
+ * finding-neighbours-in-a-two-dimensional-array
+ *
+ * ^That link helped a bit
  */
-unsigned int getNeighbors(unsigned int x, unsigned int y,
+unsigned int getNeighbors(unsigned int y, unsigned int x,
 						  char **arr, unsigned int rows, unsigned int cols) {
-	unsigned int neighbors;
-	char **buff = make2Dchar(rows + 2, cols + 2);
-	buff = centerPattern(rows, cols, arr, rows + 2, cols + 2);
+
+	// create a 2d array with a buffer of one cells as a border to avoid
+	// going out of bounds
+	char **buff = centerPattern(rows, cols, arr, rows + 2, cols + 2);
+
+	// if we fail to allocate the memory let the user know
 	if (!buff) {
 		printf("failed to allocate array buff");
 	}
+	unsigned int neighbors = 0; // initialize the amount of neighbors with size 0
 
-	neighbors = buff[(x+1)-1][(y+1)-1] +
-				buff[(x+1)-1][(y+1)] +
-				buff[(x+1)-1][(y+1)+1] +
+	// These 8 if statements check the neighbors of the given cell
+	// if there is a neighbor, add 1 to the amount of neighbors it has
+	if (buff[(x+1)-1][(y+1)-1] == 'x') {
+		neighbors += 1;
+	}
+	if (buff[(x+1)-1][(y+1)] == 'x') {
+		neighbors += 1;
+	}
+	if (buff[(x+1)-1][(y+1)+1] == 'x') {
+		neighbors += 1;
+	}
+	if (buff[(x+1)][(y+1)-1] == 'x') {
+		neighbors += 1;
+	}
+	if (buff[(x+1)][(y+1)+1] == 'x') {
+		neighbors += 1;
+	}
+	if (buff[(x+1)+1][(y+1)-1] == 'x') {
+		neighbors += 1;
+	}
+	if (buff[(x+1)+1][(y+1)] == 'x') {
+		neighbors += 1;
+	}
+	if (buff[(x+1)+1][(y+1)+1] == 'x') {
+		neighbors += 1;
+	}
 
-				buff[(x+1)][(y+1)-1] +
-				buff[(x+1)][(y+1)+1] +
+	// de-allocate the array we used since we don't need it anymore
+	free(buff);
 
-				buff[(x+1)+1][(y+1)-1] +
-				buff[(x+1)+1][(y+1)] +
-				buff[(x+1)+1][(y+1)+1];
-
+	// return the amount of neighbors the specified cell has
 	return neighbors;
 
-	free(buff);
 }
 
 /**
@@ -281,27 +307,114 @@ unsigned int getNeighbors(unsigned int x, unsigned int y,
  * @param New The generation to write to
  */
 void playOne(unsigned int rows, unsigned int cols, char **old, char **new) {
+	// create row and column counter variables and a variable to store our
+	// calculation for the amount of neighbors the cell has
 	unsigned int i, j, neighbors;
+
+	// Pre-condition:
+	// No rows have been scanned for life
 	for (i = 0; i < rows; i++) {
+		// Invariant 10:
+		// i+1 is equivalent to the amount of rows we have searched through
+
+		// Pre-condition:
+		// No columns have been searched in this ith row
 		for (j = 0; j < cols; j++) {
-			neighbors = getNeighbors(i, j, old, rows, cols);
+			// Invariant 11:
+			// j+1 is equivalent to the amount of columns that have been
+			// searched through
+
+			// calculate the number of neighbors the specific cell has
+			neighbors = getNeighbors(j, i, old, rows, cols);
+
+			// if the cell is occupied, and has 0-1 or 4-8 neighbors, kill it
+			// by writing a blank to the new array in the same spot
 			if ((old[i][j] == 'x') &&
 				((neighbors == 0 || neighbors == 1)
 			 || ((neighbors <= 8) && (neighbors >= 4)))) {
 				new[i][j] = ' ';
 			}
+
+			// otherwise if the cell is occupied and has either 2 or 3
+			// neighbors, let it live by writing an 'x' to the same spot
+			// on the new array
 			else if ((old[i][j] == 'x') && (neighbors == 2 || neighbors == 3)) {
 				new[i][j] = 'x';
 			}
+			// otherwise, if the cell is unoccupied and has exactly 3 neighbors,
+			// birth a new one by writing an 'x' to the new array at the same
+			// spot
 			else if ((old[i][j] == ' ') && (neighbors == 3)) {
 				new[i][j] = 'x';
 			}
-
+			else {
+				new[i][j] = ' ';
+			}
 		}
+		// Post-condition:
+		// All columns in the ith row of the old and new array have been read and written
 	}
+	// Post-condition:
+	// All rows of the new and old grids have been read from and written to
 }
 
+/**
+ * Prints the given grid
+ * @param rows The amount of rows
+ * @param cols The amount of columns
+ * @param grid The grid to print
+ *
+ */
+void printGrid(unsigned int rows, unsigned int cols, char **grid) {
+	int i,j; // y and x counters for loop
 
+	// Pre-condition:
+	// No rows have been printed
+	for (i = 0; i < rows; i++) {
+		// Invariant 12:
+		// i+1 is equal to the amount of rows printed
+
+		// Pre-condition:
+		// No columns in ith row have been printed
+		for (j = 0; j < cols; j++) {
+			// Invariant 13:
+			// j+1 is equal to the number of columns printed in the ith row
+			printf("%c", grid[i][j]);
+		}
+		// Post-condition:
+		// all columns in ith row have been printed
+		printf("\n");
+	}
+	// Post-condition:
+	// all rows in grid have been printed
+}
+
+/**
+ * Checks to see if two arrays are the same
+ * @param rows The amount of rows in the arrays (will be identical)
+ * @param cols The amount of columns in the arrays (will be identical)
+ * @param arr1 The first array
+ * @param arr2 The second array
+ * @return 0 if same arrays or 1 if the arrays are different
+ */
+unsigned int isDifferent(unsigned int rows, unsigned int cols,
+					char **arr1, char **arr2) {
+
+	unsigned int i, j; // counter variables for rows and cols
+
+	unsigned int different = 0;
+
+	for (i = 0; i < rows; i++) {
+		for (j = 0; j < cols; j++) {
+			if (arr1[i][j] != arr2[i][j]) {
+				different = 1;
+				break;
+			}
+		}
+	}
+	return different;
+
+}
 
 /** Main function.
  * @param argc Number of words on the command line.
@@ -339,48 +452,43 @@ int main(int argc, char **argv) {
 	cols = atoi(argv[2]);
 	gens = atoi(argv[3]);
 	inputFileName = argv[4];
-
-	/*switch (argc) {
-		int i;
-		case 5:
-			for (i = 0; i < gens; i++) {
-				playOne();
-			}
-		case 7:
-			if (argv[5] == 'y' && argv[6] == 'y') {
-				for (i = 0; i < gens; i++) {
-					printCurrentGen();
-					playOne();
-					getchar();
-				}
-			}
-			else if (argv[5] == 'y' && argv[6] == 'n'){
-				for (i = 0; i < gens; i++) {
-					printCurrentGen();
-					playOne();
-				}
-			}
-			else if (argv[5] == 'n' && argv[6] == 'y') {
-				for (i = 0; i < gens; i++) {
-					playOne();
-					getchar();
-				}
-			}
-			else {
-				for (i = 0; i < gens; i++) {
-					playOne();
-				}
-			}
-
-	} */
+	if (argc == 7) {
+		if ((char) argv[5][0] == 'y') {
+			doPrint = 1;
+		}
+		else if ((char) argv[5][0] == 'n') {
+			doPrint = 0;
+		}
+		else {
+			printf("Please check your arguments and try again");
+		}
+		if ((char) argv[6][0] == 'y') {
+			doPause = 1;
+		}
+		else if (argv[6][0] == 'n') {
+			doPause = 0;
+		}
+		else {
+			printf("Please check your arguments and try again");
+		}
+	}
 
 
-	/* Here is how you would allocate an array to hold the grid.
+
+	/* Allocate 3 2d arrays to hold 3 grids
 	*/
 	gridA = make2Dchar(rows, cols);
+	char **gridB = make2Dchar(rows, cols);
+	char **gridC = make2Dchar(rows, cols);
 	//check that it succeeded.
 	if (!gridA) {
-		printf("Unable to allocate array");
+		printf("Unable to allocate array A");
+	}
+	if (!gridB) {
+		printf("Unable to allocate array B");
+	}
+	if (!gridC) {
+		printf("Unable to allocate array C");
 	}
 
 
@@ -391,27 +499,143 @@ int main(int argc, char **argv) {
 		printf("Unable to open input file: %s\n", inputFileName);
 		return EXIT_FAILURE;
 	}
+
+	// convert the file into an array to easily manipulate it
 	char **start = fileToArray(input);
-	int startRows, startCols, i, j;
+
+	// calculate how many rows and columns the file's array should be
+	int startRows, startCols;
 	startRows = calcNumberLines(input);
 	startCols = calcLongestLine(input);
+
+	// center the file's array onto gridA
 	gridA = centerPattern(startRows, startCols, start, rows, cols);
+
+	// Show the user what pattern they specified
 	printf("The pattern you have specified looks like this: \n");
-	for (i = 0; i < rows; i++) {
-		for (j = 0; j < cols; j++) {
-			printf("%c", gridA[i][j]);
+	printGrid(rows, cols, gridA);
+
+	if (argc == 5) {
+		int i;
+		char **p = gridA;
+		char **q = gridB;
+		char **temp = gridC;
+		for (i = 0; i < gens; i++) {
+			playOne(rows, cols, p, q);
+			temp = p;
+			p = q;
+			q = temp;
+			if (!isDifferent(rows, cols, gridA, gridB)
+			 || !isDifferent(rows, cols, gridB, gridC)
+			 || !isDifferent(rows, cols, gridA, gridC)) {
+
+				printf("Exit because steady state has been detected\n"
+									"Generations achieved: %d", i);
+				return EXIT_SUCCESS;
+			}
+			else if (i == gens - 1) {
+				printf("Max generations reached: %d\n", i);
+				return EXIT_SUCCESS;
+			}
 		}
-		printf("\n");
+		printGrid(rows, cols, p);
+	}
+	else if (argc == 7) {
+		int i;
+		char **p = gridA;
+		char **q = gridB;
+		char **temp = gridC;
+		if (doPrint && doPause) {
+			for (i = 0; i < gens; i++) {
+				playOne(rows, cols, p, q);
+				temp = p;
+				p = q;
+				q = temp;
+				if (!isDifferent(rows, cols, gridA, gridB)
+				 || !isDifferent(rows, cols, gridB, gridC)
+				 || !isDifferent(rows, cols, gridA, gridC)) {
+
+					printf("Exit because steady state has been detected\n"
+								"Generations achieved: %d", i);
+					return EXIT_SUCCESS;
+				}
+				else if (i == gens - 1) {
+					printf("Max generations reached: %d\n", i);
+					return EXIT_SUCCESS;
+				}
+				printGrid(rows, cols, p);
+				getchar();
+			}
+		}
+		else if (doPrint && !doPause) {
+			for (i = 0; i < gens; i++) {
+				playOne(rows, cols, p, q);
+				temp = p;
+				p = q;
+				q = temp;
+				if (!isDifferent(rows, cols, gridA, gridB)
+				 || !isDifferent(rows, cols, gridB, gridC)
+				 || !isDifferent(rows, cols, gridA, gridC)) {
+
+					printf("Exit because steady state has been detected\n"
+											"Generations achieved: %d", i);
+					return EXIT_SUCCESS;
+				}
+				else if (i == gens - 1) {
+					printf("Max generations reached: %d\n", i);
+					return EXIT_SUCCESS;
+				}
+				printGrid(rows, cols, p);
+			}
+		}
+		else if (!doPrint && doPause) {
+			for (i = 0; i < gens; i++) {
+				playOne(rows, cols, p, q);
+				temp = p;
+				p = q;
+				q = temp;
+				if (!isDifferent(rows, cols, gridA, gridB)
+				 || !isDifferent(rows, cols, gridB, gridC)
+				 || !isDifferent(rows, cols, gridA, gridC)) {
+
+					printf("Exit because steady state has been detected\n"
+							"Generations achieved: %d", i);
+					return EXIT_SUCCESS;
+				}
+				else if (i == gens - 1) {
+					printf("Max generations reached: %d\n", i);
+					return EXIT_SUCCESS;
+				}
+				getchar();
+			}
+		}
+		else {
+			int i;
+			char **p = gridA;
+			char **q = gridB;
+			char **temp = gridC;
+			for (i = 0; i < gens; i++) {
+				playOne(rows, cols, p, q);
+				temp = p;
+				p = q;
+				q = temp;
+				if (!isDifferent(rows, cols, gridA, gridB)
+				 || !isDifferent(rows, cols, gridB, gridC)
+				 || !isDifferent(rows, cols, gridA, gridC)) {
+
+					printf("Exit because steady state has been detected\n"
+												"Generations achieved: %d", i);
+					return EXIT_SUCCESS;
+				}
+				else if (i == gens - 1) {
+					printf("Max generations reached: %d\n", i);
+					return EXIT_SUCCESS;
+				}
+			}
+			printGrid(rows, cols, p);
+		}
 	}
 
-	for (i = 0; i < gens; i++) {
-
-	}
-
-	/*Once opened, you can read from the file one character at a time with fgetc().
-	 * You can read one line at a time using fgets().
-	 * You can read from standard input (the keyboard) with getchar().
-	*/
 
 	return EXIT_SUCCESS;
 }

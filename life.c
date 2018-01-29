@@ -90,38 +90,79 @@ int calcNumberLines(FILE* file) {
  * @param file The file to read from
  * @return The pointer to a 2D array that represents the given file
  */
-
 char** fileToArray(FILE* file) {
-	int rows, cols, i, j;
-	char c;
-	cols = calcLongestLine(file);
-	rows = calcNumberLines(file);
-	char **start = make2Dchar(rows, cols);
+	int rows, // will hold the amount of rows equivalent to the number
+			  // of lines in the file
+
+		cols, // holds the amount of columns - equivalent to the max characters
+		      // in a line
+
+		   i, // x coordinate counter variable for traversing 2d array
+		   j; // y coordinate counter variable for traversing 2d array
+
+	char c; // holds the current character for file reading
+	cols = calcLongestLine(file); // stores the longest line of the file
+								  // so we know how many columns the array
+								  // should have
+
+	rows = calcNumberLines(file); // stores the amount of lines in the file
+								  // so we know how many rows we should have
+
+	char **start = make2Dchar(rows, cols); // allocate memory for a 2d array
+										   // cols wide and rows tall
+
+	// if we get a null pointer, print a message to the user
 	if (!start) {
 		printf("Unable to allocate start array");
 	}
-	rewind(file);
+	rewind(file); // make sure we start from the beginning of the file
+
+	// Pre-condition:
+	// The file hasn't been read or parsed
 	for (i = 0; i < rows; i++) {
+		// Invariant 3:
+		// i is equal to the amount of lines read
 		for (j = 0; j < cols; j++) {
+			// Invariant 4:
+			// j is equal to the amount of characters read on the ith line
+
+			// if the character is not the EOF signal then it must be
+			// something we can parse
 			if ((c = fgetc(file)) != EOF) {
+				// if the character is an 'x' then put that in the array
 				if (c == 'x') {
 					start[i][j] = 'x';
 				}
+				// otherwise, if its an 'o' put that in the array as a blank
 				else if (c == 'o'){
 					start[i][j] = ' ';
 				}
+				// otherwise, if its a new line character and we're in the
+				// 0th column, then go back a column because we don't want
+				// the new line in our array
 				else if (c == '\n' && j == 0) {
 					j--;
 				}
+				// otherwise, if it's a new line character and we're halfway
+				// through a column fill in the rest of the row with blanks
 				else {
+					// Pre-condition:
+					// j is less than the amount of total columns left in
+					// the row
 					while (j < cols) {
+						// Invariant 5:
+						//
 						start[i][j] = ' ';
 						j++;
 					}
+					// Post-condition:
+					// j is equal to the amount of columns in the row
 				}
 			}
 		}
 	}
+	// Post-condition:
+	// the file has been read and parsed up to the EOF signal
 	return start;
 }
 
@@ -254,10 +295,17 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 	char **start = fileToArray(input);
-	int startRows, startCols;
+	int startRows, startCols, i, j;
 	startRows = calcNumberLines(input);
 	startCols = calcLongestLine(input);
 	gridA = centerPattern(startRows, startCols, start, rows, cols);
+	printf("The pattern you have specified looks like this: \n");
+	for (i = 0; i < rows; i++) {
+		for (j = 0; j < cols; j++) {
+			printf("%c", gridA[i][j]);
+		}
+		printf("\n");
+	}
 
 
 
